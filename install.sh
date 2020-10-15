@@ -8,5 +8,5 @@ echo
 echo "Hardening your OS..."
 echo "---------------------------"
 export DEBIAN_FRONTEND=noninteractive
-apt-get -qq update > /dev/null 2>&1
-apt-get -qq upgrade -y > /dev/null 2>&1
+apt-get -qq update 
+apt-get -qq upgrade -y
