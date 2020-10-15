@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# wget -O install.sh 'https://github.com/bi-pixel/chc/raw/master/install.sh'; bash install.sh
+# запускать под рутом
+# wget -O install.sh 'https://github.com/bi-pixel/chc/raw/master/install.sh'; bash install.sh MASTERNODEGENKEY
 
 clear
 echo "============================================================================================="
@@ -9,6 +10,11 @@ echo "==========================================================================
 echo
 echo "Hardening your OS..."
 echo "---------------------------"
+NODEIP=$(dig +short myip.opendns.com @resolver1.opendns.com)
+PRIVIP=$(hostname -I)
+RPCUSER=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w10 | head -n1)
+RPCPASSWORD=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w22 | head -n1)
+GENKEY=$1
 export DEBIAN_FRONTEND=noninteractive
 apt-get -qq update
 apt-get -qq upgrade -y
@@ -32,20 +38,21 @@ listen=1
 rpcport=11995
 rpcallowip=127.0.0.1
 server=1
-rpcuser=user
-rpcpassword=password
-#masternode=1
-#masternodeprivkey=GENKEY
-#externalip=34.67.150.167:11994
+rpcuser=$RPCUSER
+rpcpassword=$RPCPASSWORD
+masternode=1
+masternodeprivkey=$GENKEY
+externalip=$NODEIP:11994
 " | sudo tee .chaincoincore/chaincoin.conf
 
 cd .chaincoincore/sentinel/ || exit
 rm -rf venv
 virtualenv ./venv
 ./venv/bin/pip install -r requirements.txt
+cd ~ || exit
 
 ( crontab -l | cat; echo "* * * * * cd /root/.chaincoincore/sentinel && ./venv/bin/python bin/sentinel.py >/dev/null 2>&1" ) | crontab -
-( crontab -l | cat; echo "@reboot sudo /sbin/iptables -t nat -A OUTPUT -s 10.128.0.5 -d 34.67.150.167 -j DNAT --to-destination 127.0.0.1" ) | crontab -
+( crontab -l | cat; echo "@reboot sudo /sbin/iptables -t nat -A OUTPUT -s $PRIVIP -d $NODEIP -j DNAT --to-destination 127.0.0.1" ) | crontab -
 ( crontab -l | cat; echo "@reboot /root/chaincoin/chaincoind" ) | crontab -
 ( crontab -l | cat; echo "*/20 * * * * /root/chaincoin/chaincoind" ) | crontab -
 
