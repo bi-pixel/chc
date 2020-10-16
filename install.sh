@@ -43,6 +43,9 @@ rpcpassword=$RPCPASSWORD
 masternode=1
 masternodeprivkey=$GENKEY
 externalip=$NODEIP:11994
+addnode=80.210.127.13:11994
+addnode=52.183.12.76:11994
+addnode=104.236.89.11:11994
 " | sudo tee .chaincoincore/chaincoin.conf
 
 cd .chaincoincore/sentinel/ || exit
@@ -72,3 +75,5 @@ mkswap /swapfile
 swapon /swapfile
 # Отредактируйте файл / etc / fstab, указав, что своп должен монтироваться при загрузке
 echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
+
+reboot
